@@ -6,6 +6,48 @@
 * CI: <https://main.bosh-ci.cf-app.com/teams/main/pipelines/bosh:cli>
 * Roadmap: [Pivotal Tracker](https://www.pivotaltracker.com/n/projects/956238)
 
+## Special Note about This Fork
+
+This fork allows bosh v2 CLI to skip TLS verification on communicating with a BOSH director.
+
+### Why?
+
+I can understand the CFF's decision to force certificate verification ([1](https://github.com/cloudfoundry/bosh-cli/issues/82), [2](https://github.com/cloudfoundry/bosh-cli/issues/168)), but feel too strict to conform it for some existing environments.
+
+Thare are still so many BOSH environments built with bosh CLI v1 and/or bosh-init. To communicate with the BOSH director in those environments using bosh CLI v2, it may sometimes be difficult to provide the right certificates especially when the director is using a self-signed certificate.
+
+So I've made this fork for tentative use until bosh CLI v2 will become the mainstream.
+
+### How to Build
+
+#### Prerequisites
+
+* Go 1.6 or later
+
+#### Build (only for Linux/bash environment)
+
+```
+git clone https://github.com/nota-ja/bosh-cli.git
+cd bosh-cli
+git remote add upstream https://github.com/cloudfoundry/bosh-cli.git  # For the sake of version of build
+git fetch upstream -p                                                 # For the sake of version of build
+bin/build-fork
+```
+
+And you'll get the `bosh` executable binary in the top of the repository.
+
+```
+./bosh -v
+```
+
+### How to Skip Certificate Verification
+
+Just set the environment variable `BOSH_DIRECTOR_INSECURE_HTTPS` to `true`:
+
+```
+export BOSH_DIRECTOR_INSECURE_HTTPS=true
+```
+
 ## Usage
 
 - [Install](https://bosh.io/docs/cli-v2.html)

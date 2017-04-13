@@ -1,0 +1,38 @@
+#!/bin/bash
+
+set -e
+
+if [ "$GOPATH" = "" ];
+then
+    echo "ERROR: GOPATH is not provided"
+    exit -1
+fi
+
+latest_upstream_tag_commit=$(git log --decorate --pretty=oneline --abbrev-commit | grep 'tag:' | head -1)
+latest_upstream_commit=$(echo $latest_upstream_tag_commit | awk '{ print $1 }')
+latest_upstream_tag=$(echo $latest_upstream_tag_commit | sed -e 's/^..*tag: \([^ ,]*\)[ ,].*/\1/')
+latest_fork_commit=$(git log -1 --oneline | awk '{ print $1 }')
+version=${latest_upstream_tag}-${latest_upstream_commit}-fork-${latest_fork_commit}
+sed -i 's/\[DEV BUILD\]/'"$version"'/' cmd/version.go
+
+pwd=${PWD}
+target=${GOPATH}/src/github.com/cloudfoundry
+
+if [ "$pwd" = "${target}/bosh-cli" ];
+then
+    go build -o ${pwd}/bosh
+else
+    mkdir -p ${target}
+    rm -rf ${target}/bosh-cli
+    cp -rf ../bosh-cli ${target}/
+
+    pushd ${target}/bosh-cli
+    go build -o ${pwd}/bosh
+    popd
+fi
+
+echo
+echo '**************'
+echo 'cmd/version.go has been modified. Please reset it before do something.'
+echo '**************'
+echo

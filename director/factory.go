@@ -5,6 +5,8 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
+	"strings"
 
 	bosherr "github.com/cloudfoundry/bosh-utils/errors"
 	boshhttp "github.com/cloudfoundry/bosh-utils/http"
@@ -53,6 +55,10 @@ func (f Factory) httpClient(config Config, taskReporter TaskReporter, fileReport
 	}
 
 	rawClient := boshhttpclient.CreateDefaultClient(certPool)
+	if strings.ToLower(os.Getenv("BOSH_DIRECTOR_INSECURE_HTTPS")) == "true" {
+		rawClient = boshhttpclient.CreateDefaultClientInsecureSkipVerify()
+	}
+
 	authAdjustment := NewAuthRequestAdjustment(
 		config.TokenFunc, config.Client, config.ClientSecret)
 	rawClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
